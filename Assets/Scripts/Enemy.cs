@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Object = UnityEngine.Object;
 
 public class Enemy : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class Enemy : MonoBehaviour
     #region Serialized Private Fields
     
     [SerializeField] private int value;
+    [SerializeField] private GameObject destroyPrefab;
+    [SerializeField] private Transform coreTransform;
     
     #endregion
 
@@ -53,6 +56,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        Instantiate(destroyPrefab, coreTransform.position, transform.rotation);
+    }
+
     #endregion
 
     #region Public Functions
@@ -81,7 +89,7 @@ public class Enemy : MonoBehaviour
         
         PlayerStats.Instance.AddCoins(value);
 
-        Destroy(gameObject, 10f);
+        Destroy(gameObject, 3f);
     }
     
     public void Cheer()
