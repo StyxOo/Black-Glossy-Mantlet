@@ -8,10 +8,10 @@ public class Stage : MonoBehaviour
 {
 
     [ReorderableList] [SerializeField] private List<GameObject> floorTiles = new List<GameObject>();
-    [SerializeField] private Spawner spawner;
     [SerializeField] private float activationTime = 0f;
     
-    private float blockDelay = .2f;
+    private Spawner _spawner;
+    private float _blockDelay = .2f;
 
     public float ActivationTime => activationTime;
     public float ActiveTime { get; private set; } = 0f;
@@ -24,12 +24,15 @@ public class Stage : MonoBehaviour
             tile.SetActive(false);
         }
 
-        spawner.enabled = false;
+
+        _spawner = GetComponentInChildren<Spawner>();
+        GameManager.Instance.AddSpawner(_spawner);
+        _spawner.gameObject.SetActive(false);
     }
 
     public IEnumerator Enable()
     {
-        yield return new WaitForSeconds(blockDelay);
+        yield return new WaitForSeconds(_blockDelay);
 
         if (floorTiles.Count > 0)
         {
@@ -39,9 +42,12 @@ public class Stage : MonoBehaviour
         }
         else
         {
-            spawner.enabled = true;
-            ActiveTime = Time.time;
-            IsActive = true;
+            if (_spawner.gameObject != null)
+            {
+                _spawner.gameObject.SetActive(true);
+                ActiveTime = Time.time;
+                IsActive = true;
+            }
         }
     }
 }

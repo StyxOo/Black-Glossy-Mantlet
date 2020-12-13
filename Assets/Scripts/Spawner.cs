@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 public class Spawner : MonoBehaviour
@@ -21,6 +18,7 @@ public class Spawner : MonoBehaviour
     
     private float _nextSpawnTime = 0;
     private int _spawned = 0;
+    private ParticleSystem _particleSystem;
 
     #endregion
 
@@ -29,9 +27,11 @@ public class Spawner : MonoBehaviour
 
     #region Unity Functions
 
-    private void OnEnable()
+    private void Awake()
     {
         GetComponent<MeshRenderer>().enabled = false;
+
+        _particleSystem = GetComponentInChildren<ParticleSystem>();
     }
 
     private void Update()
@@ -62,6 +62,7 @@ public class Spawner : MonoBehaviour
         
         _nextSpawnTime = Time.time + spawnDelay;
         _spawned++;
+        _particleSystem.Play();
     }
     
     #endregion

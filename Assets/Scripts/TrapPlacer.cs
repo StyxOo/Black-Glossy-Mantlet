@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class TrapPlacer : MonoBehaviour
 {
     #region Serialized Private Fields
     
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private GameObject buildEffect;
     
     #endregion
 
@@ -17,6 +19,7 @@ public class TrapPlacer : MonoBehaviour
     private GameObject _currentSpell;
     private Camera _camera;
     private bool _selling = false;
+    private AudioSource _audio;
 
     #endregion
 
@@ -28,6 +31,7 @@ public class TrapPlacer : MonoBehaviour
     private void Awake()
     {
         _camera = Camera.main;
+        _audio = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -106,9 +110,10 @@ public class TrapPlacer : MonoBehaviour
             {
                 if (hit.transform.childCount > 0)
                 {
-                    var trap = hit.transform.GetComponentInChildren<SpikeTrap>();
+                    var trap = hit.transform.GetComponentInChildren<Trap>();
                     PlayerStats.Instance.AddCoins(Mathf.CeilToInt(trap.SpawnCost / 2f));
                     Destroy(trap.gameObject);
+                    Instantiate(buildEffect, trap.transform.position, Quaternion.identity);
                 }
 
                 _selling = false;
@@ -121,12 +126,18 @@ public class TrapPlacer : MonoBehaviour
         var hit = RayCast();
         if (hit.collider != null)
         {
-            _currentTrap.transform.position = hit.collider.transform.position + Vector3.up;
+            var point = hit.collider.transform.position;
+            point.y = 0f;
+            _currentTrap.transform.position = point;
+        }
+        else
+        {
+            _currentTrap.transform.position = Vector3.up * 100f;
         }
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (hit.collider.GetComponentInChildren<SpikeTrap>() != null)
+            if (hit.collider.GetComponentInChildren<Trap>() != null)
             {
                 return;
             }
@@ -140,20 +151,32 @@ public class TrapPlacer : MonoBehaviour
         var hit = RayCast();
         if (hit.collider != null)
         {
-            _currentSpell.transform.position = hit.point;
+            var point = hit.point;
+            point.y = 0f;
+            _currentSpell.transform.position = point;
+        }
+        else
+        {
+            _currentSpell.transform.position = Vector3.up * 100f;
         }
         
         if (Input.GetMouseButtonDown(0))
         {
-            var spell = _currentSpell.GetComponent<Spell>();
-
-            var canBuy = PlayerStats.Instance.UseCoins(spell.Cost);
-            if (canBuy)
+            if (hit.collider != null)
             {
-                _currentSpell = Input.GetKey(KeyCode.LeftShift)
-                    ? Instantiate(_currentSpell, Vector3.zero, Quaternion.identity)
-                    : null;
-                spell.Place();
+                var spell = _currentSpell.GetComponent<Spell>();
+
+                var canBuy = PlayerStats.Instance.UseCoins(spell.Cost);
+                if (canBuy)
+                {
+                    _audio.Play();
+                    _currentSpell = Instantiate(_currentSpell, Vector3.zero, Quaternion.identity);
+                    spell.Place();
+                }
+            }
+            else
+            {
+                Cancel();
             }
         }
     }
@@ -167,7 +190,7 @@ public class TrapPlacer : MonoBehaviour
     
     private void SpawnTrap(GameObject floorTile)
     {
-        var trap = _currentTrap.GetComponent<SpikeTrap>();
+        var trap = _currentTrap.GetComponent<Trap>();
 
         var canBuy = PlayerStats.Instance.UseCoins(trap.SpawnCost);
 
@@ -175,8 +198,12 @@ public class TrapPlacer : MonoBehaviour
         {   
             _currentTrap.transform.parent = floorTile.transform;
             _currentTrap.transform.localPosition = Vector3.up;
+
+            Instantiate(buildEffect, _currentTrap.transform.position, Quaternion.identity);
             
             _currentTrap = Input.GetKey(KeyCode.LeftShift) ? Instantiate(_currentTrap, Vector3.zero, Quaternion.identity) : null;
+            
+            _audio.Play();
             
             trap.enabled = true;
         }

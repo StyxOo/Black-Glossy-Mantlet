@@ -4,38 +4,39 @@ using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
 
-public class SpikeTrap : MonoBehaviour
+public class SpikeTrap : Trap
 {
-
     #region Serialized Private Fields
     
     [SerializeField] private float trapResetTime = 3f;
     [SerializeField] private float trapResetCompleteTime = 1f;
     [SerializeField] private float launchForce = 3f;
-    [SerializeField] private int spawnCost = 10;
-    
+
     #endregion
 
     #region Private Fields
     
     private List<Enemy> _enemies = new List<Enemy>();
     private Animator _animator;
-    private bool _canTrigger = true;
+    private bool _canTrigger = false;
+    private ParticleSystem _hitEffect;
 
     #endregion
 
     #region Public Fields
-
-    public int SpawnCost => spawnCost;
-    
     #endregion
 
     #region Unity Functions
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
+        
         _enemies = new List<Enemy>();
         _animator = GetComponent<Animator>();
+        _hitEffect = GetComponentInChildren<ParticleSystem>();
+
+        StartCoroutine(StartDelay());
     }
 
     private void Update()
@@ -89,6 +90,13 @@ public class SpikeTrap : MonoBehaviour
             enemy.Die(Vector3.up * launchForce);
         }
 
+        if (_enemies.Count > 0)
+        {
+            _hitEffect.Play();
+        }
+        
+        _audio.Play();
+
         _enemies = new List<Enemy>();
 
         StartCoroutine(TrapReset());
@@ -101,6 +109,13 @@ public class SpikeTrap : MonoBehaviour
         yield return new WaitForSeconds(trapResetTime);
         _animator.SetBool("Active", false);
         yield return new WaitForSeconds(trapResetCompleteTime);
+        _audio.Play();
+        ResetTrap();
+    }
+
+    private IEnumerator StartDelay()
+    {
+        yield return new WaitForSeconds(trapResetTime);
         ResetTrap();
     }
 

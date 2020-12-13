@@ -26,8 +26,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3029423192103503641}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.19999993, z: -0.257}
-  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_LocalPosition: {x: 0, y: 0.45099998, z: -0.257}
+  m_LocalScale: {x: 8, y: 8, z: 8}
   m_Children: []
   m_Father: {fileID: 4735958832672846941}
   m_RootOrder: 1
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f448673e6435b0c4fae73cce779150ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cost: 5
+  cost: 30
   enemyLayer:
     serializedVersion: 2
     m_Bits: 512
@@ -152,15 +152,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4302235518840040868, guid: f05725667a12ba749b291472ac37d39e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.079
+      value: -0.146
       objectReference: {fileID: 0}
     - target: {fileID: 4302235518840040868, guid: f05725667a12ba749b291472ac37d39e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.749
+      value: 1.602
       objectReference: {fileID: 0}
     - target: {fileID: 4302235518840040868, guid: f05725667a12ba749b291472ac37d39e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.005
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 4302235518840040868, guid: f05725667a12ba749b291472ac37d39e, type: 3}
       propertyPath: m_LocalRotation.w

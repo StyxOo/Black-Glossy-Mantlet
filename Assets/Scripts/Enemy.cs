@@ -58,7 +58,10 @@ public class Enemy : MonoBehaviour
 
     private void OnDestroy()
     {
-        Instantiate(destroyPrefab, coreTransform.position, transform.rotation);
+        if (_dead)
+        {
+            Instantiate(destroyPrefab, coreTransform.position, transform.rotation);
+        }
     }
 
     #endregion

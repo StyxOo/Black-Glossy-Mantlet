@@ -1,13 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
 
     #region Serialized Private Fields
 
+    [SerializeField] private float winTime;
     [ReorderableList] [SerializeField] private List<Stage> stages;
+    [SerializeField] private GameObject gameAudio;
     
     #endregion
 
@@ -16,6 +20,7 @@ public class GameManager : MonoBehaviour
     private Camera _camera;
     private bool _lost = false;
     private int _stageIndex = 0;
+    private List<Spawner> _spawners = new List<Spawner>();
     
     #endregion
 
@@ -24,6 +29,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public Vector3 CameraPosition { get; private set; }
+    public bool IsRunning { get; private set; }
+    public bool Muted { get; private set; }
 
     #endregion
 
@@ -39,21 +46,28 @@ public class GameManager : MonoBehaviour
         {
             stage.Hide();
         }
-        
-        ActivateNextStage();
+
+        IsRunning = false;
+
+        Muted = PlayerPrefs.GetInt("Mute", 1) > 0;
+        gameAudio.SetActive(Muted);
     }
 
     private void Update()
     {
-        var pos = _camera.transform.position;
-        pos.y = 0f;
-        CameraPosition = pos;
-
-        if (stages.Count > _stageIndex)
+        if (IsRunning)
         {
-            if (stages[_stageIndex - 1].IsActive && Time.time > stages[_stageIndex - 1].ActiveTime + stages[_stageIndex].ActivationTime)
+            var pos = _camera.transform.position;
+            pos.y = 0f;
+            CameraPosition = pos;
+
+            if (!_lost && stages.Count > _stageIndex)
             {
-                ActivateNextStage();
+                if (stages[_stageIndex - 1].IsActive &&
+                    Time.time > stages[_stageIndex - 1].ActiveTime + stages[_stageIndex].ActivationTime)
+                {
+                    ActivateNextStage();
+                }
             }
         }
     }
@@ -61,7 +75,15 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Public Functions
-    
+
+    public void StartGame()
+    {
+        IsRunning = true;
+        ActivateNextStage();
+        StartCoroutine(WinTimer());
+    }
+
+
     public void OnLoose()
     {
         if (_lost)
@@ -70,7 +92,46 @@ public class GameManager : MonoBehaviour
         }
 
         _lost = true;
-        Debug.Log($"You reached a score of {PlayerStats.Instance.Score}");
+        
+        GetComponent<AudioSource>().Play();
+
+        var score = PlayerStats.Instance.Score;
+        Debug.Log($"You reached a score of {score}");
+
+        var highscore = PlayerPrefs.GetInt("Highscore", 0);
+
+        if (score > highscore)
+        {
+            Debug.Log("New Highscore!!");
+            PlayerPrefs.SetInt("Highscore", score);
+            UIManager.Instance.NewHighscore(score);
+        }
+        else
+        {
+            UIManager.Instance.EndScreen(score, highscore);
+        }
+
+        foreach (var spawner in _spawners)
+        {
+            Destroy(spawner);
+        }
+    }
+
+    public void AddSpawner(Spawner spawner)
+    {
+        _spawners.Add(spawner);
+    }
+
+    public void Reload()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void Mute()
+    {
+        Muted = !Muted;
+        gameAudio.SetActive(Muted);
+        PlayerPrefs.SetInt("Mute", Muted ? 1 : 0);
     }
 
     #endregion
@@ -79,9 +140,16 @@ public class GameManager : MonoBehaviour
 
     private void ActivateNextStage()
     {
+        Debug.Log($"Activate Stage {stages[_stageIndex].name}");
         StartCoroutine(stages[_stageIndex].Enable());
         _stageIndex++;
     }
-    
+
+    private IEnumerator WinTimer()
+    {
+        yield return new WaitForSeconds(winTime);
+        OnLoose();
+    }
+
     #endregion
 }

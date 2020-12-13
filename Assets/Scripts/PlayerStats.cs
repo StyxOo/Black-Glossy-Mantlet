@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ public class PlayerStats : MonoBehaviour
     #region Serialized Private Fields
     
     [SerializeField] private int startCoins;
-    [SerializeField] private Text coinText;
+    [SerializeField] private TMP_Text coinText;
     
     #endregion
 
